@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "right": {
     "id": "a4ca030a8bc2bcd5",
@@ -180,7 +180,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 247.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -196,6 +196,7 @@
   },
   "active": "5df4d844dc0637ab",
   "lastOpenFiles": [
+    "线性代数/矩阵.md",
     "机器人运动学/机器人逆向运动.md",
     "程序语言设计/Python/python基础语法.md",
     "程序语言设计/Python/基础语法学习.md",
@@ -207,7 +208,6 @@
     "程序语言设计/Python/python进阶",
     "程序语言设计/Python",
     "程序语言设计",
-    "线性代数/矩阵.md",
     "未命名.base",
     "欢迎.md",
     "线性代数",
