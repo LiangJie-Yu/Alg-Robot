@@ -20,6 +20,20 @@
               "icon": "lucide-file",
               "title": "python基础语法"
             }
+          },
+          {
+            "id": "3b7e0d3d76aabfab",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "程序语言设计/Python/python进阶/python模块.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "python模块"
+            }
           }
         ]
       }
@@ -180,7 +194,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 247.5
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -194,11 +208,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "5df4d844dc0637ab",
+  "active": "00234ce438d71902",
   "lastOpenFiles": [
+    "程序语言设计/Python/python进阶/python模块.md",
+    "程序语言设计/Python/python基础语法.md",
     "线性代数/矩阵.md",
     "机器人运动学/机器人逆向运动.md",
-    "程序语言设计/Python/python基础语法.md",
     "程序语言设计/Python/基础语法学习.md",
     "程序语言设计/Python/类型查询判断.md",
     "程序语言设计/Python/删除函数.md",
