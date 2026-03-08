@@ -8,76 +8,6 @@
         "type": "tabs",
         "children": [
           {
-            "id": "3681b418944fbbd3",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "程序语言设计/Python/python基础语法.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "python基础语法"
-            }
-          },
-          {
-            "id": "5fff778a4b071850",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "STM32/点灯PC13.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "点灯PC13"
-            }
-          },
-          {
-            "id": "90f137153b916eca",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "GPIO(General Purpose Input Output)通用输入输出口"
-            }
-          },
-          {
-            "id": "b420b5ed937e941e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "电子/电容.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "电容"
-            }
-          },
-          {
-            "id": "8cb942ec33595b4b",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "STM32/新建工程.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "新建工程"
-            }
-          },
-          {
             "id": "0d5669a081db4f66",
             "type": "leaf",
             "state": {
@@ -90,9 +20,37 @@
               "icon": "lucide-file",
               "title": "GPIO(General Purpose Input Output)通用输入输出口"
             }
+          },
+          {
+            "id": "edc431505e760aec",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "GPIO(General Purpose Input Output)通用输入输出口"
+            }
+          },
+          {
+            "id": "f88fe721263603c2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "LED.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "LED"
+            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -124,7 +82,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#［8］代表与此目标区域交叉的目标个数，［9］代表颜色的编号（它可以用来分辨这个",
+                "query": " ",
                 "matchingCase": true,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -265,24 +223,28 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0d5669a081db4f66",
+  "active": "f88fe721263603c2",
   "lastOpenFiles": [
+    "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
+    "LED.md",
+    "图片/Pasted image 20260308134849.png",
+    "程序语言设计/C语言/C语言_STM32常用.md",
+    "程序语言设计/C语言/指针.md",
+    "程序语言设计/C语言/数据类型.md",
+    "电子/电容.md",
+    "图片/Pasted image 20260308133645.png",
+    "图片/Pasted image 20260308133512.png",
     "STM32/新建工程.md",
     "STM32/前置.md",
     "图片/Pasted image 20260307220626.png",
     "STM32/点灯PC13.md",
-    "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
     "电子/一阶RC滤波.md",
-    "电子/电容.md",
     "图片/Pasted image 20260307150233.png",
     "图片/Pasted image 20260307150011.png",
     "图片/Pasted image 20260307122239.png",
     "图片/Pasted image 20260307122115.png",
     "图片/Pasted image 20260307122008.png",
     "图片/Pasted image 20260307121955.png",
-    "图片/Pasted image 20260307112611.png",
-    "图片/Pasted image 20260307110852.png",
-    "图片/Pasted image 20260307110217.png",
     "程序语言设计/Python/python基础语法.md",
     "STM32",
     "程序语言设计/Python/python进阶/数据结构.md",
@@ -292,7 +254,6 @@
     "机械视觉/openmv/openmv学习.md",
     "程序语言设计/python与c本质区别.md",
     "机器人运动学/机器人逆向运动.md",
-    "程序语言设计/C语言/指针.md",
     "程序语言设计/C语言",
     "图片",
     "机械视觉/openmv",
