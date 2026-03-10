@@ -31,4 +31,31 @@
 ### 用在突发不能等待的场景
 比如旋钮，是突发的，并且转瞬即逝，就需要外部中断
 
+## EXTI基本结构
+
+![[Pasted image 20260310195707.png]]
+工作路径如上图所示
+根据该图可写代码
+1. 配置RCC，开启相关的外设时钟(需要开启的是GPIO与AFIO，EXTI和NVIC不需要开启，因为NVIC是内核的外设，而RCC管的是外设的时钟)
+2. 配置GPIO，选择我们的端口为输入模式
+3. 配置AFIO外部中断引脚选择，选择我们用的这一路的GPIO，连接到后面的EXTI
+4. 配置EXTI，选择边沿触发方式和选择触发响应方式(中断响应和事件响应)
+5. 配置NVIC，给中断选择一个合适的优先级
+6. 通过NVIC，外部中断信号就能进入CPU了
+7. CPU收到中断信号，跳转到中断函数里执行中断程序
+AFIO的函数在GPIO中，
+```c
+
+void GPIO_AFIODeInit(void);//复位AFIO外设//调用函数后，AFIO外设的配置就会全部清除
+void GPIO_PinLockConfig(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);//锁定GPIO配置//调用函数，指定某个引脚，引脚的配置会被锁定，放置意外更改
+void GPIO_EventOutputConfig(uint8_t GPIO_PortSource, uint8_t GPIO_PinSource);//配置AFIO的事件输出功能
+void GPIO_EventOutputCmd(FunctionalState NewState);//配置AFIO的事件输出功能
+void GPIO_PinRemapConfig(uint32_t GPIO_Remap, FunctionalState NewState);//引脚重映射（第一个参数重映射方式，第二个参数新的状态）
+void GPIO_EXTILineConfig(uint8_t GPIO_PortSource, uint8_t GPIO_PinSource);//外部中断需要用的函数//调用这个函数，可以配置AFIO的数据选择器，来选择我们想要的中断引脚
+void GPIO_ETH_MediaInterfaceConfig(uint32_t GPIO_ETH_MediaInterface);//和以太网有关
+
+
+
+
+```
 

@@ -194,21 +194,6 @@
             }
           },
           {
-            "id": "921a1558d470421c",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "程序语言设计/Python/python进阶/数据结构.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "数据结构 的大纲"
-            }
-          },
-          {
             "id": "be3001076694555c",
             "type": "leaf",
             "state": {
@@ -217,9 +202,24 @@
               "icon": "git-pull-request",
               "title": "Source Control"
             }
+          },
+          {
+            "id": "921a1558d470421c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "STM32/EXTI外部中断.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "EXTI外部中断 的大纲"
+            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -237,8 +237,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "f8d54d1502f9ce65",
+  "active": "be3001076694555c",
   "lastOpenFiles": [
+    "Pasted image 20260310195707.png",
     "STM32/OLED(Organic Light Emitting Diode)有机发光二极管.md",
     "STM32/EXTI外部中断.md",
     "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
@@ -280,7 +281,6 @@
     "程序语言设计/Python/删除函数.md",
     "程序语言设计/Python/运算符.md",
     "程序语言设计/Python/基本数据类型.md",
-    "程序语言设计/Python/注释.md",
     "程序语言设计/Python/python进阶",
     "程序语言设计/Python",
     "程序语言设计",
