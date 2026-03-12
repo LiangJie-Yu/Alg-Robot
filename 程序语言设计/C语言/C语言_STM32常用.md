@@ -40,7 +40,7 @@ typedef unsigned char uint8_t;
 uint8_t a;//等于unsigned char a;
 ```
 
-## Struce结构体
+## Struct结构体
 关键字：Struct
 用途：数据打包，不同类型变量的集合
 定义结构体变量：

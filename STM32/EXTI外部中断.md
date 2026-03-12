@@ -43,19 +43,125 @@
 5. 配置NVIC，给中断选择一个合适的优先级
 6. 通过NVIC，外部中断信号就能进入CPU了
 7. CPU收到中断信号，跳转到中断函数里执行中断程序
-AFIO的函数在GPIO中，
+## AFIO的函数在GPIO中，
 ```c
 
 void GPIO_AFIODeInit(void);//复位AFIO外设//调用函数后，AFIO外设的配置就会全部清除
 void GPIO_PinLockConfig(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);//锁定GPIO配置//调用函数，指定某个引脚，引脚的配置会被锁定，放置意外更改
 void GPIO_EventOutputConfig(uint8_t GPIO_PortSource, uint8_t GPIO_PinSource);//配置AFIO的事件输出功能
 void GPIO_EventOutputCmd(FunctionalState NewState);//配置AFIO的事件输出功能
+
+------
 void GPIO_PinRemapConfig(uint32_t GPIO_Remap, FunctionalState NewState);//引脚重映射（第一个参数重映射方式，第二个参数新的状态）
 void GPIO_EXTILineConfig(uint8_t GPIO_PortSource, uint8_t GPIO_PinSource);//外部中断需要用的函数//调用这个函数，可以配置AFIO的数据选择器，来选择我们想要的中断引脚
+------
+
 void GPIO_ETH_MediaInterfaceConfig(uint32_t GPIO_ETH_MediaInterface);//和以太网有关
+```
+## EXTI
+```c
+-----------
+//以下三个基本每个外设都有
+void EXTI_DeInit(void);//清空EXTI配置，恢复成上电默认状态
+void EXTI_Init(EXTI_InitTypeDef* EXTI_InitStruct);//根据结构体里的参数配置EXTI外设//初始化EXTI用
+void EXTI_StructInit(EXTI_InitTypeDef* EXTI_InitStruct);//把参数传递的结构体变量赋一个默认值
+-----------
+
+
+void EXTI_GenerateSWInterrupt(uint32_t EXTI_Line);//软件触发外部中断//调用这个函数，参数给一个指定的中断线，就能软件触发一次这个外部中断
 
 
 
+-----------
+//以下函数也是库函数模板函数
+//本质上都是对状态寄存器的读写
+FlagStatus EXTI_GetFlagStatus(uint32_t EXTI_Line);//可以获取指定的标志位是否被置1了
+void EXTI_ClearFlag(uint32_t EXTI_Line);//对置1的标志位进行清除
+ITStatus EXTI_GetITStatus(uint32_t EXTI_Line);//获取中断标志位是否被置1了
+void EXTI_ClearITPendingBit(uint32_t EXTI_Line);//清楚中断挂起标志位
+//想在主程序中查看和清除标志位，用上面两个
+//想在中断函数里查看和清除标志位，用下面两个
+```
+
+## NVIC
+在misc中
+```c
+void NVIC_PriorityGroupConfig(uint32_t NVIC_PriorityGroup);//用来中断分组，参数是中断分组的方式
+void NVIC_Init(NVIC_InitTypeDef* NVIC_InitStruct);//初始化
+void NVIC_SetVectorTable(uint32_t NVIC_VectTab, uint32_t Offset);//设置中断向量表
+void NVIC_SystemLPConfig(uint8_t LowPowerMode, FunctionalState NewState);//系统低功耗配置
+void SysTick_CLKSourceConfig(uint32_t SysTick_CLKSource);
 
 ```
 
+## 对射式红外传感器计次
+### CountSensor.c文件
+```c
+#include "stm32f10x.h"                  // Device header
+uint16_t CountSensor_Count;
+void CountSensor_Init(void)
+{
+	//配置时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);
+	//配置GPIO
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;//上拉输入，默认高电平
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_14;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	//配置AFIO外部中断引脚选择
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource14);
+	//配置EXTI
+	EXTI_InitTypeDef EXTI_InitStructure;
+	EXTI_InitStructure.EXTI_Line=EXTI_Line14;//EXTI的14线路配置为中断模式
+	EXTI_InitStructure.EXTI_LineCmd=ENABLE;//开启中断
+	EXTI_InitStructure.EXTI_Mode=EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger=EXTI_Trigger_Falling;//下降沿触发
+	EXTI_Init(&EXTI_InitStructure);
+	//配置NVIC
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel=EXTI15_10_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=1;
+	NVIC_Init(&NVIC_InitStructure);
+}
+uint16_t CountSensor_Get(void)
+{
+	return CountSensor_Count/2;
+}
+//配置中断函数，中断函数不需要调用，是自动执行
+//尽量不要在中断程序中加延时，会“阻塞主程序”
+void EXTI15_10_IRQHandler(void)//中断函数
+{
+	if(EXTI_GetITStatus(EXTI_Line14)==SET)//中断标志位判断//确保是想要的中断触发的函数
+	{
+		CountSensor_Count++;
+		EXTI_ClearITPendingBit(EXTI_Line14);//清除中断标志位
+	}
+}
+```
+虽然选择了下降沿触发，但是出现了上升沿和下降沿同时触发的情况，在此基础上
+对于uint16_t CountSensor_Get(void)的返回值进行修改
+变成return CountSensor_Count/2;
+在中断程序中应避免添加中断函数，会“阻塞主程序”
+### main.c
+```c
+#include "stm32f10x.h"                  // Device header
+#include "OLED.h"
+#include "CountSensor.h"
+int main(void)
+{
+	OLED_Init();
+	CountSensor_Init();
+	OLED_ShowString(1,1,"Count:");
+	while(1)
+	{
+		OLED_ShowNum(1,7,CountSensor_Get(),5);
+	}
+}
+```
+## 旋转编码器
