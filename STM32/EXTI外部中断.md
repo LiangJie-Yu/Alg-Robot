@@ -165,3 +165,109 @@ int main(void)
 }
 ```
 ## 旋转编码器
+### 什么是旋转编码器
+编码器内部是机械触电，转的时候PB0和PB1会先后输出下降沿(该编码器是正交编码器，输出波形会相差90度)
+通过波形先后可以自定义编码器正转反转和输出显示的正负
+![[Pasted image 20260313120347.png]]
+在此判断：
+B下降沿A低电平为正转，A下降沿B低电平时反转
+
+配置两个独立的外部中断
+- **EXTI0 中断** → 接 **PB0 引脚** → **PB0 出现下降沿就触发；
+- **EXTI1 中断** → 接 **PB1 引脚** → **PB1 出现下降沿就触发；
+### Encoder.c
+```c
+#include "stm32f10x.h"                  // Device header
+
+int16_t Encoder_Count;
+void Encoder_Init(void)
+{
+	//配置时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);
+	//配置GPIO
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;//上拉输入，默认高电平
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0|GPIO_Pin_1;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	//配置AFIO外部中断引脚选择
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource0);
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource1);
+	//配置EXTI
+	EXTI_InitTypeDef EXTI_InitStructure;
+	EXTI_InitStructure.EXTI_Line=EXTI_Line0|EXTI_Line1;//EXTI的14线路配置为中断模式
+	EXTI_InitStructure.EXTI_LineCmd=ENABLE;//开启中断
+	EXTI_InitStructure.EXTI_Mode=EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger=EXTI_Trigger_Falling;//下降沿触发
+	EXTI_Init(&EXTI_InitStructure);
+	//配置NVIC
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel=EXTI0_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=1;
+	NVIC_Init(&NVIC_InitStructure);
+	//变量复用，结构体变量本身可被覆盖重写，用于下一个通道配置
+	NVIC_InitStructure.NVIC_IRQChannel=EXTI1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=2;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
+int16_t Encoder_Get(void)
+{
+	int16_t Temp;
+	Temp=Encoder_Count;
+	Encoder_Count=0;
+	return Temp;
+}
+//中断
+void EXTI0_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(EXTI_Line0)==SET)
+	{
+		if(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_1)==0)//是的话是反转
+		{
+			Encoder_Count--;
+		}
+		EXTI_ClearITPendingBit(EXTI_Line0);
+	}
+}
+void EXTI1_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(EXTI_Line1)==SET)
+	{
+		if(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_0)==0)//是的话是反转
+		{
+			Encoder_Count++;
+		}
+		EXTI_ClearITPendingBit(EXTI_Line1);
+	}
+}
+```
+Encoder_Get(void)使用中间变量Temp，进行一个中断过程中的次数存储
+#### 为什么要设置中间变量Temp
+1. 这与中断有关
+该程序有两个中断，EXTI0和EXTI1下降沿时中断就触发，立即停止主程序，插队先进行
+Temp 是保证在**主程序被中断强行暂停、停止执行**的过程中，就算编码器继续动作、触发中断修改了全局计数值，也不会影响已经存到 Temp 里的正确数据，避免计数丢失。
+2. 设置Temp会使代码更简洁易读
+本身写这个函数就是两个目的：Encoder_Count清零与返回Encoder_Count的值
+return是不想程序有变化，本质上是有矛盾的，那么比起设置两个函数完成，用Temp来进行中间过渡会更加易读和方便
+#### 如果不设置Temp会怎样？
+主程序读全局变量、清零的间隙，中断改了数值，直接被清零丢数
+
+## 中断函数要点
+1. 需简短快速，避免出现延时函数(因为中断处理突发事情，会影响主程序，造成堵塞。拿本次编码器举例，中间加了延时函数的话，就会导致Encoder_Count堆积过多而不能及时清零而溢出)
+2. 避免在中断函数和主函数中调用相同的函数或者操作同一个硬件
+3. 多用标志位和变量，减少代码之间的耦合，让各部分代码相互独立，仅使用变量标志位或者函数作为接口
+## 耦合
+代码的牵连程度
+低耦合
+Encoder.c不碰OLED，不碰main.c的变量(Num)，main.c不改Encoder.c的变量(如：Encoder_Count)
+好处：代码可复用(换一个工程可复用，不用全改，之用改main.c和增加新的函数代码)
+
+
