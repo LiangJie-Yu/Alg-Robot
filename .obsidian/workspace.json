@@ -83,12 +83,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "STM32/USART外设.md",
+                "file": "STM32/EXTI外部中断.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "USART外设"
+              "title": "EXTI外部中断"
             }
           }
         ],
@@ -265,21 +265,20 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "00234ce438d71902",
+  "active": "58f51aa4776784af",
   "lastOpenFiles": [
+    "STM32/串口.md",
+    "STM32/USART外设.md",
     "图片/Pasted image 20260315221844.png",
     "图片/Pasted image 20260315221538.png",
     "图片/Pasted image 20260315221045.png",
     "图片/Pasted image 20260315220955.png",
     "图片/Pasted image 20260315220936.png",
-    "STM32/串口.md",
-    "STM32/USART外设.md",
     "图片/Pasted image 20260315133503.png",
     "图片/Pasted image 20260315133424.png",
     "图片/Pasted image 20260315132714.png",
     "图片/Pasted image 20260315132526.png",
     "图片/Pasted image 20260315132244.png",
-    "图片/Pasted image 20260315131704.png",
     "STM32/新建工程.md",
     "STM32/前置.md",
     "STM32/EXTI外部中断.md",

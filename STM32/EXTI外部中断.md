@@ -241,7 +241,7 @@ void EXTI1_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(EXTI_Line1)==SET)
 	{
-		if(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_0)==0)//是的话是反转
+		if(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_0)==0)//是的话是正转
 		{
 			Encoder_Count++;
 		}
