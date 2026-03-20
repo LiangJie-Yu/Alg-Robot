@@ -506,3 +506,303 @@ int main(void)
 	}
 }
 ```
+## HEX数据收发包
+### 数据包格式的定义
+#### 数据包作用
+把一个个单独的数据打包起来，方便我们进行多字节的数据通信
+#### 数据包任务
+把同一批的数据进行打包和分割，方便接收方进行识别
+#### 常用方法
+串口数据包通常采用的是额外添加包头包尾的方式
+![[Pasted image 20260319133111.png]]
+以上为HEX数据包
+数据都以原始的字节数据本身呈现
+优点：传输最简单，解析数据非常简单，比较适合一些模块发送原始的数据，比如一些使用串口通信的陀螺仪、温湿度传感器
+缺点：灵活性不足，载荷容易和包头包尾重复
+![[Pasted image 20260319133121.png|331]]
+以上为文本数据包
+每个字节经过了一层编码和译码，最后表现出来的就是文本格式，但是实际上每个文本字节的背后都是HEX数据
+优点：数据直观易理解，非常灵活，适合一些输入指令进行人机交互的场合，比如蓝牙模块常用的AT指令，CNC和3D打印机常用的G代码
+缺点：解析效率低
+#### 讲解
+定义0xFF包头，0xFE包尾，当接收到0xFF知道一个数据包来了，接着接收到的字节就当作是数据包的第1，2，3，个数据，存在一个数组里，最后跟一个包尾，当收到0xFE后，置一个标志位，告诉程序我收到了一个数据包，然后不断重复
+问题：数据包中如果有数据为0xFF或0xFE，与包头包尾重复的话，可能会引起误判
+解决方法
+1. 限制载荷数据的范围，在发送的时候对数据进行限幅
+2. 使用固定长度的数据包
+3. 增加包头包尾数量，并且尽量避免出现数据与包头包尾重复的情况
+4. 包头包尾可以删掉一个
+问题：各种数据转换为字节流
+### 数据包的收发流程
+#### 发送
+HEX数据包中，发送数据包就定义数组，填充数据，然后用上面的SendArray
+文本数据包中，写字符串，调用SendString
+
+![[Pasted image 20260319141505.png]]
+固定包长HEX数据包接收方法
+
+![[Pasted image 20260319141530.png]]
+可变包长文本数据包接收方法
+### 代码部分
+#### 固定包长HEX数据包
+##### 发送
+Serial.c
+```c
+//以下两个数组只存储发送或者接收的载荷数据
+uint8_t Serial_TxPacket[4];
+uint8_t Serial_RxPacket[4];
+//作为标志//如果收到Rx就置RxFlag为1(SET)
+uint8_t Serial_RxFlag;
+
+//调用后，TxPacket的4个数据，会自动加上包头包尾发送出去
+void Serial_SendPacket(void)
+{
+	Serial_SendByte(0xFE);
+	Serial_SendArray(Serial_TxPacket,4);
+	Serial_SendByte(0xFF);
+}
+```
+ Serial.h
+因为我们需要在别的文件中(main.c)中使用Serial_TxPacket这个变量，需要在.h文件中进行一个数组声明
+```c
+extern uint8_t Serial_TxPacket[];
+extern uint8_t Serial_RxPacket[];
+```
+ main.c
+ ```c
+Serial_TxPacket[0]=0x00;
+Serial_TxPacket[1]=0x01;
+Serial_TxPacket[2]=0x02;
+Serial_TxPacket[3]=0x03;
+Serial_SendPacket();
+ ```
+串口接收显示：
+![[Pasted image 20260320204548.png]]
+##### 接收
+Serial.c
+```c
+void USART1_IRQHandler(void)
+{
+	static uint8_t RxState=0;
+	static uint8_t pRxPacket=0;
+	if(USART_GetFlagStatus(USART1,USART_FLAG_RXNE)==SET)
+	{
+		uint8_t RxDate=USART_ReceiveData(USART1);
+		if(RxState==0)
+		{
+			if(RxDate==0xFE)
+			{
+				RxState=1;
+				pRxPacket=0;
+			}
+		}
+		else if(RxState==1)//依次接收四个数据，存在RxPacket数组里
+		{
+			Serial_RxPacket[pRxPacket]=RxDate;
+			pRxPacket++;
+			if(pRxPacket>=4)
+			{
+				RxState=2;
+				
+			}
+		}
+		else if(RxState==2)
+		{
+			if(RxDate==0xFE)
+			{
+				RxState=0;
+				Serial_RxFlag=1;
+			}
+		}
+		
+		
+		
+		USART_ClearITPendingBit(USART1,USART_IT_RXNE);
+	}
+}
+
+```
+增加状态机状态判断，根据上面的状态转移图来写
+main.c
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "Serial.h"
+#include "Key.h"
+uint8_t RxDate;
+uint8_t KeyNum;
+int main(void)
+{
+	OLED_Init();
+	Serial_Init();
+	Key_Init();
+	OLED_ShowString(1,1,"TxPacket");
+	OLED_ShowString(3,1,"RxPacket");
+	while(1)
+	{
+		KeyNum=Key_GetNum();
+		if(KeyNum==1)
+		{
+			Serial_TxPacket[0]++;
+			Serial_TxPacket[1]++;
+			Serial_TxPacket[2]++;
+			Serial_TxPacket[3]++;
+			Serial_SendPacket();
+			OLED_ShowHexNum(2,1,Serial_TxPacket[0],2);
+			OLED_ShowHexNum(2,4,Serial_TxPacket[1],2);
+			OLED_ShowHexNum(2,7,Serial_TxPacket[2],2);
+			OLED_ShowHexNum(2,10,Serial_TxPacket[3],2);
+			
+		}
+		
+		if(Serial_GetRxFlag()==1)
+		{
+			OLED_ShowHexNum(4,1,Serial_RxPacket[0],2);
+			OLED_ShowHexNum(4,4,Serial_RxPacket[1],2);
+			OLED_ShowHexNum(4,7,Serial_RxPacket[2],2);
+			OLED_ShowHexNum(4,10,Serial_RxPacket[3],2);
+		}
+	}
+}
+```
+#### 可变包长文本数据包
+##### 发送
+因为是可变包长，载荷数不固定，所以不方便修改
+直接在主函数里**SendString**或者**printf**就可以了
+#### 接收
+Serial.c
+```c
+void USART1_IRQHandler(void)
+{
+	static uint8_t RxState=0;
+	static uint8_t pRxPacket=0;
+	if(USART_GetFlagStatus(USART1,USART_FLAG_RXNE)==SET)
+	{
+		uint8_t RxDate=USART_ReceiveData(USART1);
+		if(RxState==0)
+		{
+			if(RxDate=='@'&&Serial_RxFlag==0)
+			{
+				RxState=1;
+				pRxPacket=0;
+			}
+		}
+		else if(RxState==1)//依次接收四个数据，存在RxPacket数组里
+		{
+			if(RxDate=='\r')
+			{
+				RxState=2;
+			}
+			else
+			{
+				Serial_RxPacket[pRxPacket]=RxDate;
+				pRxPacket++;
+			}
+		}
+		else if(RxState==2)
+		{
+			if(RxDate=='\n')
+			{
+				RxState=0;
+				Serial_RxPacket[pRxPacket]='\0';
+				Serial_RxFlag=1;
+			}
+		}
+		
+		
+		
+		USART_ClearITPendingBit(USART1,USART_IT_RXNE);
+	}
+}
+```
+main.c
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "LED.h"
+#include "OLED.h"
+#include "Serial.h"
+#include <string.h>
+
+
+int main(void)
+{
+	LED_Init();
+	OLED_Init();
+	Serial_Init();
+	OLED_ShowString(1,1,"TxPacket");
+	OLED_ShowString(3,1,"RxPacket");
+	while(1)
+	{
+		if(Serial_RxFlag==1)
+		{
+			OLED_ShowString(4,1,"               ");
+			OLED_ShowString(4,1,Serial_RxPacket);
+			
+			if(strcmp(Serial_RxPacket,"LED_ON")==0)
+			{
+				LED1_OFF();
+				Serial_SendString("LED_ON\r\n");
+				OLED_ShowString(2,1,"                ");
+				OLED_ShowString(2,1,"LED_ON_OK");
+			}
+			else if(strcmp(Serial_RxPacket,"LED_OFF")==0)
+			{
+				LED1_ON();
+				Serial_SendString("LED_OFF\r\n");
+				OLED_ShowString(2,1,"                ");
+				OLED_ShowString(2,1,"LED_OFF_OK");
+			}
+			else
+			{
+				Serial_SendString("ERROR_COMMAND");
+				OLED_ShowString(2,1,"                ");
+				OLED_ShowString(2,1,"ERROR_COMMAND");
+			}
+			
+			Serial_RxFlag=0;
+			
+		}
+	}
+}
+
+```
+
+
+## FlyMcu串口下载
+通过串口给STM32下载程序
+没有STLINK可用这个软件通过串口下载程序
+必须连接串口USART1
+
+
+
+
+
+
+## STLINK Utility STLINK下载
+配合STLINK使用的工具
+通过STLINK给STM32下载程序
+必须连接STLINK
+跳线帽恢复成两个都在最左边，复位
+![[Pasted image 20260320235053.png]]
+打开选项字节的配置
+Target-Option Bytes
+![[Pasted image 20260320235909.png]]
+STLINK更新固件功能
+STLINK-Firmware update-Connect
+提示重启后，拔掉重新插Connect
+## 状态机
+
+
+
+
+
+
+
+
+
+
+
+
+
