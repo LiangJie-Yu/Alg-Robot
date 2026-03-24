@@ -11,6 +11,7 @@
 | 推挽输出   | OUT_PP<br>(Out Push Pull)  | 数字输出 | 可输出引脚电平，高电平接VDD，低电平接VSS   |
 | 复用开漏输出 | AF_OD<br>(Atl Open Drain)  | 数字输出 | 由片上外设控制，高电平为高阻态，低电平接VSS   |
 | 复用推挽输出 | AF_PP<br>(Atl Push Pull)   | 数字输出 | 由片上外设控制，高电平接VDD，低电平接VSS   |
+浮空输入：外部输入信号功率很小，内部的上拉电阻可能会影响到这个输入信号，防止影响外部输入的电平
 ```c
 IPD
 (In Put Down)

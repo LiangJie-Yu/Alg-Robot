@@ -67,6 +67,14 @@ TIM_ETR(在引脚定义图看时PA0)接一个外部==方波==时钟，配置内�
 刹车输入：给电机驱动提供安全保障的，外部引脚BKIN产生刹车信号或内部时钟生效，产生故障，控制电路就会自动切断电机的输出，防止意外的发生
 ## 定时中断基本结构
 ![[Pasted image 20260321175717.png]]
+初始化流程：
+1. RCC开启时钟(定时器基准时钟和整个外设的工作时钟就会同时开启)
+2. 选择时基单元的是时钟源(对于定时中断，选择内部时钟源)
+3. 配置时基单元(包括预分频器、自动重装器、计数模式等，用一个结构体进行配置)
+4. 配置输出中断控制，允许更新中断输出到NVIC
+5. 配置NVIC，在NVIC中打开定时器中断通道，并分配一个优先级
+6. 运行控制，使能一下计数器
+7. 定时器中断函数，每隔一段时间自动执行一次
 ## 时序
 ### 预分频器时序
 ![[Pasted image 20260321194934.png]]
@@ -76,12 +84,21 @@ CNT_EN计数器使能(高电平运行，低电平停止)
 计数器计数频率：CK_CNT = CK_PSC / (PSC + 1)
 ### 计数器时序
 ![[Pasted image 20260321194940.png]]
-计数器溢出频率：CK_CNT_OV = CK_CNT / (ARR + 1)= CK_PSC / (PSC + 1) / (ARR + 1)
-
+计数器溢出频率：CK_CNT_OV(定时频率) = CK_CNT / (ARR + 1)= CK_PSC(预分频器的输入时钟) / (PSC + 1) / (ARR + 1)
+PSC预分频少，ARR自动重装多，以比较高频率计比较多的数
+PSC预分频多，ARR自动重装少，以比较低频率计比较少的数
+如果说我们现在要定时1s，定时频率为1Hz，CK_PSC选择内部时钟72MHz
+就是说(PSC + 1) * (ARR + 1)=72MHz，自主分配
+我们可以给PSC=7200-1，ARR=1000-1
+在此给预分频是对72MHz进行7200分配，得到的是10K的计数频率，在10K的频率下，计10000数，就是1s的时间
 ### 计数器无预装时序
 ![[Pasted image 20260321194950.png]]
+ARPE选择是否有预装功能，1为有，0为没有
 ### 计数器有预装时序
 ![[Pasted image 20260321195115.png]]
+## RCC时钟树
+![[Pasted image 20260322101840.png]]
+## OC(Output Compare)输出比较
 
 
 
@@ -92,17 +109,193 @@ CNT_EN计数器使能(高电平运行，低电平停止)
 
 
 
+## 定时器库函数
+```c
+void TIM_DeInit(TIM_TypeDef* TIMx);//恢复缺省配置
+void TIM_TimeBaseInit(TIM_TypeDef* TIMx, TIM_TimeBaseInitTypeDef* TIM_TimeBaseInitStruct);//时基单元初始化
 
 
 
+void TIM_TimeBaseStructInit(TIM_TimeBaseInitTypeDef* TIM_TimeBaseInitStruct);//把结构体变量赋一个默认值
 
 
+void TIM_Cmd(TIM_TypeDef* TIMx, FunctionalState NewState);//使能计数器
 
+void TIM_ITConfig(TIM_TypeDef* TIMx, uint16_t TIM_IT, FunctionalState NewState);//使能中断输出信号
+
+----------------------------------
+//以下六个函数是时基单元的时钟源选择
+void TIM_InternalClockConfig(TIM_TypeDef* TIMx);//选择内部时钟
+void TIM_ITRxExternalClockConfig(TIM_TypeDef* TIMx, uint16_t TIM_InputTriggerSource);//选择ITRx其他定时器的时钟
+void TIM_TIxExternalClockConfig(TIM_TypeDef* TIMx, uint16_t TIM_TIxExternalCLKSource,
+                                uint16_t TIM_ICPolarity, uint16_t ICFilter);//选择TIx捕获通道的时钟
+void TIM_ETRClockMode1Config(TIM_TypeDef* TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity,
+                             uint16_t ExtTRGFilter);//选择ETR外部时钟模式1输入的时钟
+void TIM_ETRClockMode2Config(TIM_TypeDef* TIMx, uint16_t TIM_ExtTRGPrescaler, 
+                             uint16_t TIM_ExtTRGPolarity, uint16_t ExtTRGFilter);//选择ETR外部时钟模式2输入的时钟
+void TIM_ETRConfig(TIM_TypeDef* TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity,
+                   uint16_t ExtTRGFilter);//单独配置ETR引脚的预分频器、极性、滤波器等参数
+---------------------------------
+void TIM_PrescalerConfig(TIM_TypeDef* TIMx, uint16_t Prescaler, uint16_t TIM_PSCReloadMode);//单独写预分频值
+void TIM_CounterModeConfig(TIM_TypeDef* TIMx, uint16_t TIM_CounterMode);//改变计数器的计数模式
+
+void TIM_ARRPreloadConfig(TIM_TypeDef* TIMx, FunctionalState NewState);//自动重装器预装功能配置
+
+void TIM_SetCounter(TIM_TypeDef* TIMx, uint16_t Counter);//给计数器写入一个值//手动给一个计数值
+void TIM_SetAutoreload(TIM_TypeDef* TIMx, uint16_t Autoreload);//给自动重装器写入一个值//手动给一个自动重装值
+
+uint16_t TIM_GetCounter(TIM_TypeDef* TIMx);//获取当前计数器的值//想看预分频值
+
+///以下四个是和标志位相关函数
+FlagStatus TIM_GetFlagStatus(TIM_TypeDef* TIMx, uint16_t TIM_FLAG);
+void TIM_ClearFlag(TIM_TypeDef* TIMx, uint16_t TIM_FLAG);
+ITStatus TIM_GetITStatus(TIM_TypeDef* TIMx, uint16_t TIM_IT);
+void TIM_ClearITPendingBit(TIM_TypeDef* TIMx, uint16_t TIM_IT);
+
+```
 
 ## TIM基本定时
 目的：定时执行程序
 定一个固定时间，每隔这个时间产生中断
 用处：时钟，秒表，或用一些程序算法
+### 定时器定时中断
+Timer.c
+```C
+#include "stm32f10x.h"                  // Device header
+extern uint16_t Num;
+void Timer_Init(void)
+{
+	//在此开启TIM2，TIM2在APB1线上
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
+	//选择时基单元时钟
+	TIM_InternalClockConfig(TIM2);//选择内部时钟
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision=TIM_CKD_DIV1;//1分频
+	TIM_TimeBaseInitStruct.TIM_CounterMode=TIM_CounterMode_Up;//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period=10000-1;//
+	TIM_TimeBaseInitStruct.TIM_Prescaler=7200-1;//PSC预分频器
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter=0;//重复计数器
+	TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStruct);
+	TIM_ClearFlag(TIM2,TIM_FLAG_Update);
+	//使能更新中断
+	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+	//配置NVIC
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel=TIM2_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority=2;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority=1;
+	NVIC_Init(&NVIC_InitStruct);
+	//启动定时器
+	TIM_Cmd(TIM2,ENABLE);
+}
+void TIM2_IRQHandler(void)
+{
+	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET)
+	{
+		Num++;
+		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);
+	}
+}
+```
+main.c
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "Timer.h"
+uint16_t Num;
+int main(void)
+{
+	OLED_Init();
+	Timer_Init();
+	OLED_ShowString(1,1,"Num:");
+	OLED_ShowString(2,1,"CNT:");
+	
+	while(1)
+	{
+		OLED_ShowNum(1,5,Num,5);
+		OLED_ShowNum(2,5,TIM_GetCounter(TIM2),5);
+	}
+}
+
+```
+### 定时器外部时钟
+Timer.c
+```c
+#include "stm32f10x.h"                  // Device header
+extern uint16_t Num;
+void Timer_Init(void)
+{
+	//在此开启TIM2，TIM2在APB1线上//开启GPIO时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA,&GPIO_InitStructure);
+	//选择时基单元时钟
+	TIM_ETRClockMode2Config(TIM2,TIM_ExtTRGPSC_OFF, TIM_ExtTRGPolarity_NonInverted, 0x00);
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision=TIM_CKD_DIV1;//1分频
+	TIM_TimeBaseInitStruct.TIM_CounterMode=TIM_CounterMode_Up;//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period=10-1;//
+	TIM_TimeBaseInitStruct.TIM_Prescaler=1-1;//不需要分配
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter=0;//重复计数器
+	TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStruct);
+	TIM_ClearFlag(TIM2,TIM_FLAG_Update);
+	//使能更新中断
+	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+	//配置NVIC
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel=TIM2_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority=2;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority=1;
+	NVIC_Init(&NVIC_InitStruct);
+	//启动定时器
+	TIM_Cmd(TIM2,ENABLE);
+}
+uint16_t Timer_GetCounter(void)
+{
+	return TIM_GetCounter(TIM2);
+}
+void TIM2_IRQHandler(void)
+{
+	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET)
+	{
+		Num++;
+		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);
+	}
+}
+```
+main.c
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "Timer.h"
+uint16_t Num;
+int main(void)
+{
+	OLED_Init();
+	Timer_Init();
+	OLED_ShowString(1,1,"Num:");
+	OLED_ShowString(2,1,"CNT:");
+	
+	while(1)
+	{
+		OLED_ShowNum(1,5,Num,5);
+		OLED_ShowNum(2,5,Timer_GetCounter(),5);
+	}
+}
+```
+因为是外部输入，所以加上GPIO_A0的初始化代码，然后再加上CNT的读取封装函数，规范化
 ## TIM定时器输出比较
 产生PWM波形，用于驱动电机、舵机等设备
 ## TIM定时器输入捕获
