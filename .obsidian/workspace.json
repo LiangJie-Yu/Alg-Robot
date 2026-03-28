@@ -35,8 +35,7 @@
               "title": "用到英文及简称"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -209,10 +208,13 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "97e02fc7009be7c3",
+  "active": "fd76fa0e74e8348d",
   "lastOpenFiles": [
-    "STM32/TIM(Timer)定时器.md",
+    "Pasted image 20260328215555.png",
+    "Pasted image 20260328165447.png",
+    "Pasted image 20260328164352.png",
     "用到英文及简称.md",
+    "STM32/TIM(Timer)定时器.md",
     "STM32/DMA直接储存器存储.md",
     "STM32/EXTI外部中断.md",
     "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
@@ -230,9 +232,7 @@
     "图片/Pasted image 20260321194934.png",
     "图片/Pasted image 20260321175717.png",
     "图片/Pasted image 20260321175217.png",
-    "Pasted image 20260321171607.png",
     "STM32/OLED(Organic Light Emitting Diode)有机发光二极管.md",
-    "图片/Pasted image 20260321171331.png",
     "程序语言设计/C语言/多文件编程.md",
     "程序语言设计/C语言/指针.md",
     "程序语言设计/C语言/C语言_STM32常用.md",
@@ -247,7 +247,6 @@
     "程序语言设计/Python/对象和class类.md",
     "机械视觉/openmv/openmv学习.md",
     "程序语言设计/python与c本质区别.md",
-    "机器人运动学/机器人逆向运动.md",
     "程序语言设计/C语言",
     "图片",
     "机械视觉/openmv",
