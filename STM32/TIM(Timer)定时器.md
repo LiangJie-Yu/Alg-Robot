@@ -147,10 +147,28 @@ PWM分辨率：	Reso = 1 / (ARR + 1)
 - 输入PWM信号要求：周期为20ms，对应的是50Hz，高电平宽度(占空比)为0.5ms~2.5ms
 ![[Pasted image 20260328215555.png]]
 对应关系都是线性分配，按照比例来，给一个PWM输出轴就固定在一个角度
-应用场景：机器人机械臂，可以用舵机来控制关节
-
+### 应用场景
+机器人机械臂，可以用舵机来控制关节
 可以把PWM当成一个通信协议或是一个模拟输出来用
-## 直流电机
+### 舵机硬件电路
+![[Pasted image 20260328222837.png]]
+## 直流电机及驱动
+- 直流电机是一种将电能转换为机械能的装置，有两个电极，当电极正接时，电机正转，当电极反接时，电机反转
+- 直流电机属于大功率器件，GPIO口无法直接驱动，需要配合**电机驱动电路**来操作
+- TB6612是一款双路H桥型的直流电机驱动芯片，可以驱动两个直流电机并且控制其转速和方向
+### 驱动板硬件电路
+![[Pasted image 20260328223832.png]]
+由两路推挽电路组成，O1O2接电机：
+左上右下导通，电流从左流向右，右上左下导通，电流从右流向左
+H桥控制电流流过的方向，可以控制电机正反转
+### 直流电机硬件电路
+![[Pasted image 20260328223002.png]]
+三个引脚(如PWMA,AIN2,AIN1)给一个低功率的控制信号，驱动电路就会从VM汲取电流，来输出到电机，完成**低功率的控制信号控制大功率设备**的目的
+STBY(Stand By)是待机控制脚，接**GND**，芯片不工作，处于**待机**状态；接**逻辑电源VCC**，芯片**正常工作**。
+不需要待机模式，直接接VCC 3.3V，如果需要的话，任意接一个GPIO，给高低电平控制
+
+
+
 
 ## 定时器库函数
 ```c
@@ -171,7 +189,7 @@ void TIM_ITConfig(TIM_TypeDef* TIMx, uint16_t TIM_IT, FunctionalState NewState);
 void TIM_InternalClockConfig(TIM_TypeDef* TIMx);//选择内部时钟
 void TIM_ITRxExternalClockConfig(TIM_TypeDef* TIMx, uint16_t TIM_InputTriggerSource);//选择ITRx其他定时器的时钟
 void TIM_TIxExternalClockConfig(TIM_TypeDef* TIMx, uint16_t TIM_TIxExternalCLKSource,
-                                uint16_t TIM_ICPolarity, uint16_t ICFilter);//选择TIx捕获通道的时钟
+                               uint16_t TIM_ICPolarity, uint16_t ICFilter);//选择TIx捕获通道的时钟
 void TIM_ETRClockMode1Config(TIM_TypeDef* TIMx, uint16_t TIM_ExtTRGPrescaler, uint16_t TIM_ExtTRGPolarity,
                              uint16_t ExtTRGFilter);//选择ETR外部时钟模式1输入的时钟
 void TIM_ETRClockMode2Config(TIM_TypeDef* TIMx, uint16_t TIM_ExtTRGPrescaler, 
