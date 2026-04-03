@@ -125,6 +125,24 @@ PWM参数：
 | PWM模式2        | 向上计数：CNT<CCR时，REF置无效电平，CNT≥CCR时，REF置有效电平<br><br>向下计数：CNT>CCR时，REF置有效电平，CNT≤CCR时，REF置无效电平 |
 ### PWM基本结构
 ![[Pasted image 20260328164352.png]]
+注意:这是认为pwm模式1有效电平为高电平有效
+右上角的图：
+蓝色:CNT；黄色;ARR；红色:CCR
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
