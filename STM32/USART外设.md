@@ -49,7 +49,7 @@ STM32可配置的停止位长度为0.5，1，1.5，2这四种
 ![[Pasted image 20260315133503.png]]
 ## 波特率发生器
 发送器和接收器的波特率由波特率寄存器BRR里的DIV确定
-计算公式：![](file:///C:\Users\YU\AppData\Local\Temp\ksohtml8760\wps1.jpg)
+计算公式：![84](file:///C:\Users\YU\AppData\Local\Temp\ksohtml8760\wps1.jpg)
 ![[Pasted image 20260315133424.png]]
 比如我现在的波特率是9600，STM32的fPCLK2(APB2总线时钟一般是72MHz)计算得知DIV为468.75，二进制为111010100.11
 所以最后15-14位多出来补0，13-4位依次为111010100，3-0位为1100

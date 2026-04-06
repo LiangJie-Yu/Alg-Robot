@@ -1,16 +1,16 @@
 ## 定义介绍
 通过配置GPIO的端口配置寄存器，端口可以配置成以下8种模式：
 
-| 模式名称   |                            | 性质   | 特征                        |
-| ------ | -------------------------- | ---- | ------------------------- |
-| 浮空输入   | IN_FLOATING                | 数字输入 | 可读取引脚电平，若引脚悬空，则电平不确定      |
-| 上拉输入   | IPU<br>(In Pull Up)        | 数字输入 | 可读取引脚电平，内部连接上拉电阻，悬空时默认高电平 |
-| 下拉输入   | IPD<br>(In Put Down)       | 数字输入 | 可读取引脚电平，内部连接下拉电阻，悬空时默认低电平 |
-| 模拟输入   | AIN<br>(Analog IN)         | 模拟输入 | GPIO无效，引脚直接接入内部ADC        |
-| 开漏输出   | OUT_OD<br>(Out Open Drain) | 数字输出 | 可输出引脚电平，高电平为高阻态，低电平接VSS   |
-| 推挽输出   | OUT_PP<br>(Out Push Pull)  | 数字输出 | 可输出引脚电平，高电平接VDD，低电平接VSS   |
-| 复用开漏输出 | AF_OD<br>(Atl Open Drain)  | 数字输出 | 由片上外设控制，高电平为高阻态，低电平接VSS   |
-| 复用推挽输出 | AF_PP<br>(Atl Push Pull)   | 数字输出 | 由片上外设控制，高电平接VDD，低电平接VSS   |
+| 模式名称   |                            | 性质   | 特征                          |
+| ------ | -------------------------- | ---- | --------------------------- |
+| 浮空输入   | IN_FLOATING                | 数字输入 | 可读取引脚电平，若引脚悬空，则电平不确定        |
+| 上拉输入   | IPU<br>(In Pull Up)        | 数字输入 | 可读取引脚电平，内部连接上拉电阻，悬空时默认高电平   |
+| 下拉输入   | IPD<br>(In Put Down)       | 数字输入 | 可读取引脚电平，内部连接下拉电阻，悬空时默认低电平   |
+| 模拟输入   | AIN<br>(Analog IN)         | 模拟输入 | GPIO无效，引脚直接接入内部ADC          |
+| 开漏输出   | OUT_OD<br>(Out Open Drain) | 数字输出 | 可输出引脚电平，高电平为高阻态(悬空)，低电平接VSS |
+| 推挽输出   | OUT_PP<br>(Out Push Pull)  | 数字输出 | 可输出引脚电平，高电平接VDD，低电平接VSS     |
+| 复用开漏输出 | AF_OD<br>(Atl Open Drain)  | 数字输出 | 由片上外设控制，高电平为高阻态(悬空)，低电平接VSS |
+| 复用推挽输出 | AF_PP<br>(Atl Push Pull)   | 数字输出 | 由片上外设控制，高电平接VDD，低电平接VSS     |
 浮空输入：外部输入信号功率很小，内部的上拉电阻可能会影响到这个输入信号，防止影响外部输入的电平
 ```c
 IPD
@@ -63,6 +63,7 @@ uint8_t GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);//读取�
 uint16_t GPIO_ReadInputData(GPIO_TypeDef* GPIOx);//读取整个输入数据寄存器的
 uint8_t GPIO_ReadOutputDataBit(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);//读取输出数据寄存器的某一个位//一般用于输出模式下看自己输出的是什么
 uint16_t GPIO_ReadOutputData(GPIO_TypeDef* GPIOx);//读取整个输出寄存器
+
 //下面四个是GPIO的写入函数
 void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);//指定的端口设置为高电平
 void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);//指定的端口设置为低电平
