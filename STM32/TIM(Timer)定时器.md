@@ -67,10 +67,15 @@ TIM_ETR(在引脚定义图看时PA0)接一个外部==方波==时钟，配置内�
 刹车输入：给电机驱动提供安全保障的，外部引脚BKIN产生刹车信号或内部时钟生效，产生故障，控制电路就会自动切断电机的输出，防止意外的发生
 ## 定时中断基本结构
 ![[Pasted image 20260321175717.png]]
-初始化流程：
+## 初始化流程：
 1. RCC开启时钟(定时器基准时钟和整个外设的工作时钟就会同时开启)
 2. 选择时基单元的是时钟源(对于定时中断，选择内部时钟源)
 3. 配置时基单元(包括预分频器、自动重装器、计数模式等，用一个结构体进行配置)
+	TIM_OCNPolarity(极性选择):
+		TIM_OCNPolarity_High：
+			高极性，极性翻转，REF波形直接输出
+		TIM_OCNPolarity_Low
+			低极性，极性翻转，REF电平取反，有效电平为低电平
 4. 配置输出中断控制，允许更新中断输出到NVIC
 5. 配置NVIC，在NVIC中打开定时器中断通道，并分配一个优先级
 6. 运行控制，使能一下计数器
@@ -113,16 +118,16 @@ PWM参数：
 分辨率 = 占空比变化步距  (占空比变化的精细程度)
 ### 输出比较模式
 
-| 模式            | 描述                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------- |
-| 冻结            | CNT=CCR时，CNT和CCR无效，REF保持为原状态                                                             |
-| 匹配时置有效电平(高电平) | CNT=CCR时，REF置有效电平                                                                        |
-| 匹配时置无效电平(低电平) | CNT=CCR时，REF置无效电平                                                                        |
-| 匹配时电平翻转       | CNT=CCR时，REF电平翻转                                                                         |
-| 强制为无效电平       | CNT与CCR无效，REF强制为无效电平                                                                     |
-| 强制为有效电平       | CNT与CCR无效，REF强制为有效电平                                                                     |
-| PWM模式1        | 向上计数：CNT<CCR时，REF置有效电平，CNT≥CCR时，REF置无效电平<br><br>向下计数：CNT>CCR时，REF置无效电平，CNT≤CCR时，REF置有效电平 |
-| PWM模式2        | 向上计数：CNT<CCR时，REF置无效电平，CNT≥CCR时，REF置有效电平<br><br>向下计数：CNT>CCR时，REF置有效电平，CNT≤CCR时，REF置无效电平 |
+|                           | 模式            | 描述                                                                                       |
+| ------------------------- | ------------- | ---------------------------------------------------------------------------------------- |
+| TIM_OCMode_Timing         | 冻结            | CNT=CCR时，CNT和CCR无效，REF保持为原状态                                                             |
+| TIM_OCMode_Active         | 匹配时置有效电平(高电平) | CNT=CCR时，REF置有效电平                                                                        |
+| TIM_OCMode_Inactive       | 匹配时置无效电平(低电平) | CNT=CCR时，REF置无效电平                                                                        |
+| TIM_OCMode_Toggle         | 匹配时电平翻转       | CNT=CCR时，REF电平翻转                                                                         |
+| TIM_ForcedAction_Active   | 强制为无效电平       | CNT与CCR无效，REF强制为无效电平                                                                     |
+| TIM_ForcedAction_InActive | 强制为有效电平       | CNT与CCR无效，REF强制为有效电平                                                                     |
+| TIM_OCMode_PWM1           | PWM模式1        | 向上计数：CNT<CCR时，REF置有效电平，CNT≥CCR时，REF置无效电平<br><br>向下计数：CNT>CCR时，REF置无效电平，CNT≤CCR时，REF置有效电平 |
+| TIM_OCMode_PWM2           | PWM模式2        | 向上计数：CNT<CCR时，REF置无效电平，CNT≥CCR时，REF置有效电平<br><br>向下计数：CNT>CCR时，REF置有效电平，CNT≤CCR时，REF置无效电平 |
 ### PWM基本结构
 ![[Pasted image 20260328164352.png]]
 注意:这是认为pwm模式1有效电平为高电平有效
@@ -140,6 +145,9 @@ PWM分辨率：(占空比变化的步距)(占空比变化的==越细腻就越好
 
 ARR越大，CCR的范围就越大，对应的分辨率就越大
 
+现在我们要产生一个频率为1KHz，占空比为50%，分辨率为1%的PWM波形
+![[Pasted image 20260407203853.png]]
+所以，ARR=100-1;RSC=720-1;CCR=50
 ### 输出比较通道(高级)
 ![[Pasted image 20260328165447.png]]
 右边红色是增加的一个推挽电路
@@ -182,10 +190,7 @@ STBY(Stand By)是待机控制脚，接**GND**，芯片不工作，处于**待机
 void TIM_DeInit(TIM_TypeDef* TIMx);//恢复缺省配置
 void TIM_TimeBaseInit(TIM_TypeDef* TIMx, TIM_TimeBaseInitTypeDef* TIM_TimeBaseInitStruct);//时基单元初始化
 
-
-
 void TIM_TimeBaseStructInit(TIM_TimeBaseInitTypeDef* TIM_TimeBaseInitStruct);//把结构体变量赋一个默认值
-
 
 void TIM_Cmd(TIM_TypeDef* TIMx, FunctionalState NewState);//使能计数器
 
@@ -222,6 +227,89 @@ void TIM_ClearITPendingBit(TIM_TypeDef* TIMx, uint16_t TIM_IT);
 
 ```
 
+```c
+
+//以下四个是用来配置输出比较模块的，在PWM基本结构中也易看出输出比较单元有四个
+//用结构体来初始化输出比较单元
+void TIM_OC1Init(TIM_TypeDef* TIMx, TIM_OCInitTypeDef* TIM_OCInitStruct);
+void TIM_OC2Init(TIM_TypeDef* TIMx, TIM_OCInitTypeDef* TIM_OCInitStruct);
+void TIM_OC3Init(TIM_TypeDef* TIMx, TIM_OCInitTypeDef* TIM_OCInitStruct);
+void TIM_OC4Init(TIM_TypeDef* TIMx, TIM_OCInitTypeDef* TIM_OCInitStruct);
+
+
+//以下四个是用来单独更改CCR寄存器值的函数
+//在运行中更改占空比
+void TIM_SetCompare1(TIM_TypeDef* TIMx, uint16_t Compare1);
+void TIM_SetCompare2(TIM_TypeDef* TIMx, uint16_t Compare2);
+void TIM_SetCompare3(TIM_TypeDef* TIMx, uint16_t Compare3);
+void TIM_SetCompare4(TIM_TypeDef* TIMx, uint16_t Compare4);
+
+//仅高级定时器使用，在使用高级定时器输出PWM时，需要调用该函数，使能主输出，否则PWM将不能正常输出
+void TIM_CtrlPWMOutputs(TIM_TypeDef* TIMx, FunctionalState NewState);
+```
+以下的仅了解即可
+```c
+void TIM_OCStructInit(TIM_OCInitTypeDef* TIM_OCInitStruct);//给输出比较结构体赋一个默认值
+
+//以下四个是用来配置强制输出模式的
+//在运行中想要暂停输出波形并且强制输出高或低电平
+//一般用的不多，因为强制输出高电平相当于设置100%占空比，强制输出低电平相当于设置0%占空比
+void TIM_ForcedOC1Config(TIM_TypeDef* TIMx, uint16_t TIM_ForcedAction);
+void TIM_ForcedOC2Config(TIM_TypeDef* TIMx, uint16_t TIM_ForcedAction);
+void TIM_ForcedOC3Config(TIM_TypeDef* TIMx, uint16_t TIM_ForcedAction);
+void TIM_ForcedOC4Config(TIM_TypeDef* TIMx, uint16_t TIM_ForcedAction);
+
+//以下四个是用来配置CCR寄存器的预装功能
+//写入的值不会立即生效，而是在更新事件才会生效
+void TIM_OC1PreloadConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPreload);
+void TIM_OC2PreloadConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPreload);
+void TIM_OC3PreloadConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPreload);
+void TIM_OC4PreloadConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPreload);
+
+
+//用来配置快速使能的
+void TIM_OC1FastConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCFast);
+void TIM_OC2FastConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCFast);
+void TIM_OC3FastConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCFast);
+void TIM_OC4FastConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCFast);
+
+//外部清除REF信号
+void TIM_ClearOC1Ref(TIM_TypeDef* TIMx, uint16_t TIM_OCClear);
+void TIM_ClearOC2Ref(TIM_TypeDef* TIMx, uint16_t TIM_OCClear);
+void TIM_ClearOC3Ref(TIM_TypeDef* TIMx, uint16_t TIM_OCClear);
+void TIM_ClearOC4Ref(TIM_TypeDef* TIMx, uint16_t TIM_OCClear);
+
+
+
+
+//以下用来单独设置输出比较的极性
+//带n的就是高级定时器里互补通道的配置
+//这边有函数可以设置极性，在结构体初始化里也可以设置极性
+void TIM_OC1PolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPolarity);
+void TIM_OC1NPolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCNPolarity);
+void TIM_OC2PolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPolarity);
+void TIM_OC2NPolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCNPolarity);
+void TIM_OC3PolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPolarity);
+void TIM_OC3NPolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCNPolarity);
+void TIM_OC4PolarityConfig(TIM_TypeDef* TIMx, uint16_t TIM_OCPolarity);
+
+
+
+//单独修改输出使能参数
+void TIM_CCxCmd(TIM_TypeDef* TIMx, uint16_t TIM_Channel, uint16_t TIM_CCx);
+void TIM_CCxNCmd(TIM_TypeDef* TIMx, uint16_t TIM_Channel, uint16_t TIM_CCxN);
+
+//选择输出比较模式，用来单独更改输出比较模式的函数
+void TIM_SelectOCxM(TIM_TypeDef* TIMx, uint16_t TIM_Channel, uint16_t TIM_OCMode);
+
+
+
+
+```
+
+```c
+
+```
 ## TIM基本定时
 目的：定时执行程序
 定一个固定时间，每隔这个时间产生中断
@@ -366,6 +454,79 @@ int main(void)
 因为是外部输入，所以加上GPIO_A0的初始化代码，然后再加上CNT的读取封装函数，规范化
 ## TIM定时器输出比较
 产生PWM波形，用于驱动电机、舵机等设备
+PWM.c
+```c
+#include "stm32f10x.h"                  // Device header
+
+void PWM_Init(void)
+{
+	//在此开启TIM2，TIM2在APB1线上
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
+	//配置GPIOA_PIN0
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
+	
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF_PP;
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA,&GPIO_InitStructure);
+	
+	//选择时基单元时钟
+	TIM_InternalClockConfig(TIM2);//选择内部时钟
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision=TIM_CKD_DIV1;//1分频
+	TIM_TimeBaseInitStruct.TIM_CounterMode=TIM_CounterMode_Up;//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period=100-1;//ARR
+	TIM_TimeBaseInitStruct.TIM_Prescaler=720-1;//PSC预分频器
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter=0;//重复计数器
+	TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStruct);
+	TIM_ClearFlag(TIM2,TIM_FLAG_Update);
+	//使能更新中断
+	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+	//配置NVIC
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel=TIM2_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority=2;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority=1;
+	NVIC_Init(&NVIC_InitStruct);
+	
+	TIM_OCInitTypeDef TIM_OCInitStruct;
+	TIM_OCStructInit(&TIM_OCInitStruct);
+	TIM_OCInitStruct.TIM_OCMode=TIM_OCMode_PWM1;//配置输出比较模式为PWM模式1
+	TIM_OCInitStruct.TIM_OCNPolarity=TIM_OCNPolarity_High;//极性选择
+	TIM_OCInitStruct.TIM_OutputState=TIM_OutputState_Enable;//输出状态，输出使能
+	TIM_OCInitStruct.TIM_Pulse=10;//设置CCR寄存器值
+	TIM_OC1Init(TIM2,&TIM_OCInitStruct);
+
+	//启动定时器
+	TIM_Cmd(TIM2,ENABLE);
+}
+```
+
+改变注意！这里因为是高电平点亮，低电平熄灭的点亮方式，所以占空比小了才会变暗
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## TIM定时器输入捕获
 使用输入捕获模块来实现测量方波频率
 ## TIM定时器的编码器接口
