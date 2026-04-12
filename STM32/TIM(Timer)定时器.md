@@ -453,6 +453,7 @@ int main(void)
 ```
 因为是外部输入，所以加上GPIO_A0的初始化代码，然后再加上CNT的读取封装函数，规范化
 ## TIM定时器输出比较
+### 通过PWM波形进行控制LED灯的不同亮度
 产生PWM波形，用于驱动电机、舵机等设备
 PWM.c
 ```c
@@ -460,6 +461,7 @@ PWM.c
 
 void PWM_Init(void)
 {
+	//呼吸灯只用PWM驱动，暂时不用驱动电机，那么仅用通用定时器就可以完成
 	//在此开启TIM2，TIM2在APB1线上
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
 	//配置GPIOA_PIN0
@@ -470,6 +472,7 @@ void PWM_Init(void)
 	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0;
 	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA,&GPIO_InitStructure);
+	
 	
 	//选择时基单元时钟
 	TIM_InternalClockConfig(TIM2);//选择内部时钟
@@ -484,36 +487,74 @@ void PWM_Init(void)
 	TIM_ClearFlag(TIM2,TIM_FLAG_Update);
 	//使能更新中断
 	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-	//配置NVIC
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	
-	NVIC_InitTypeDef NVIC_InitStruct;
-	NVIC_InitStruct.NVIC_IRQChannel=TIM2_IRQn;
-	NVIC_InitStruct.NVIC_IRQChannelCmd=ENABLE;
-	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority=2;
-	NVIC_InitStruct.NVIC_IRQChannelSubPriority=1;
-	NVIC_Init(&NVIC_InitStruct);
 	
 	TIM_OCInitTypeDef TIM_OCInitStruct;
 	TIM_OCStructInit(&TIM_OCInitStruct);
 	TIM_OCInitStruct.TIM_OCMode=TIM_OCMode_PWM1;//配置输出比较模式为PWM模式1
-	TIM_OCInitStruct.TIM_OCNPolarity=TIM_OCNPolarity_High;//极性选择
+	TIM_OCInitStruct.TIM_OCPolarity=TIM_OCNPolarity_High;//极性选择
 	TIM_OCInitStruct.TIM_OutputState=TIM_OutputState_Enable;//输出状态，输出使能
-	TIM_OCInitStruct.TIM_Pulse=10;//设置CCR寄存器值
+	TIM_OCInitStruct.TIM_Pulse=0;//设置CCR寄存器值
 	TIM_OC1Init(TIM2,&TIM_OCInitStruct);
 
+	TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable);//开启PWM通道预装值
+
+	
 	//启动定时器
 	TIM_Cmd(TIM2,ENABLE);
 }
+}
 ```
+在此的LED灯选择正极接PA0，负极接地，那么这个接法就是高电平点亮，低电平变暗
+所以当占空比变大的时候就会变亮，占空比百年小的时候就会变暗
+```c
+TIM_OCInitStruct.TIM_Pulse=10；
+```
+修改以上这一行的代码，就可以修改CCR寄存器的值，相当于==**直接修改占空比**==！
+CCR的值为10%，意味着高电平占周期的10%
+CCR的值为50%，意味着高电平占周期的50%
+CCR的值为90%，意味着高电平占周期的90%
+### PWM控制呼吸灯
+那么我们只需要在程序中按照想要时间修改CCR寄存器的值就可以通过PWM波形来控制LED不同程度的亮灭
+```c
+void TIM_SetCompare1(TIM_TypeDef* TIMx, uint16_t Compare1);
+```
+这个函数是用来单独更改通道1的CCR值
+通过这一个函数就可以控制PWM波形的输出
+PWM.c增加函数
+```c
+void PWM_SetCompare1(uint16_t Compare)
+{
+	TIM_SetCompare1(TIM2, Compare);
+}
+```
+main.c
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "PWM.h"
+uint8_t i;
+int main(void)
+{
+	OLED_Init();
+	PWM_Init();
+	while(1)
+	{
+		for(i=0;i<=100;i++)
+		{
+			PWM_SetCompare1(i);
+			Delay_ms(10);
+		}
+		for(i=0;i<=100;i++)
+		{
+			PWM_SetCompare1(100-i);
+			Delay_ms(10);
+		}
+	}
+}
 
-改变注意！这里因为是高电平点亮，低电平熄灭的点亮方式，所以占空比小了才会变暗
-
-
-
-
-
-
+```
 
 
 
