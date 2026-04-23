@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Arduino/Arduino.md",
+                "file": "Arduino/Arduino配置ESP8266(ESP-12F)环境.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Arduino"
+              "title": "Arduino配置ESP8266(ESP-12F)环境"
             }
           }
         ],
@@ -239,10 +239,13 @@
   },
   "active": "eb1ede34e16c5d13",
   "lastOpenFiles": [
+    "Pasted image 20260423133307.png",
+    "图片/Arduino配置ESP8266(ESP-12F)环境",
+    "Pasted image 20260423132402.png",
     "Pasted image 20260423124525.png",
     "Pasted image 20260423103909.png",
     "Pasted image 20260423103821.png",
-    "Arduino/Arduino.md",
+    "Arduino/Arduino配置ESP8266(ESP-12F)环境.md",
     "Pasted image 20260423103046.png",
     "Pasted image 20260423102735.png",
     "STM32/利用RK_H差动行星轮系实现的/步进电机驱动.md",
@@ -267,11 +270,9 @@
     "图片/Pasted image 20260407203853.png",
     "STM32/点灯PC13.md",
     "STM32/串口.md",
-    "图片/Pasted image 20260406203435.png",
     "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
     "程序语言设计/Python/python进阶/数据结构.md",
     "程序语言设计/Python/python基础语法.md",
-    "图片/Pasted image 20260406195544.png",
     "STM32/GPIO引脚配置.md",
     "STM32/EXTI外部中断.md",
     "STM32/DMA直接储存器存储.md",
@@ -283,7 +284,6 @@
     "STM32",
     "程序语言设计/C语言",
     "图片",
-    "机械视觉/openmv",
-    "机械视觉"
+    "机械视觉/openmv"
   ]
 }
