@@ -39,14 +39,12 @@
             "id": "62555d1d488506eb",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "在不同固件API中查看sensor的函数.md",
-                "mode": "source",
-                "source": false
+                "file": "硬件图片/硬件3-规则设置.png"
               },
-              "icon": "lucide-file",
-              "title": "在不同固件API中查看sensor的函数"
+              "icon": "lucide-image",
+              "title": "硬件3-规则设置"
             }
           },
           {
@@ -239,13 +237,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "62555d1d488506eb",
+  "active": "00234ce438d71902",
   "lastOpenFiles": [
+    "硬件图片",
+    "硬件图片/硬件1-焊盘预留.png",
+    "硬件图片/硬件3-规则设置.png",
     "硬件.md",
-    "硬件1.png",
+    "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
     "在不同固件API中查看sensor的函数.md",
     "STM32/新建工程.md",
-    "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
     "STM32/GPIO引脚配置.md",
     "器件/继电器.md",
     "Arduino/2.烧录固件.md",
@@ -278,7 +278,6 @@
     "Pasted image 20260526203031.png",
     "Pasted image 20260423103909.png",
     "未命名.base",
-    "Pasted image 20260423133307.png",
     "图片/Arduino配置ESP8266(ESP-12F)环境",
     "Arduino",
     "图片/继电器",
