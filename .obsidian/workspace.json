@@ -39,12 +39,14 @@
             "id": "62555d1d488506eb",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "硬件图片/硬件3-规则设置.png"
+                "file": "线性代数/矩阵.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-image",
-              "title": "硬件3-规则设置"
+              "icon": "lucide-file",
+              "title": "矩阵"
             }
           },
           {
@@ -239,24 +241,29 @@
   },
   "active": "00234ce438d71902",
   "lastOpenFiles": [
-    "硬件图片",
-    "硬件图片/硬件1-焊盘预留.png",
-    "硬件图片/硬件3-规则设置.png",
     "硬件.md",
+    "硬件4-网络标签添加设置好的导线.png",
+    "图片（新）/硬件图片/硬件2-统一添加网络.png",
+    "23年E题目.md",
+    "机械视觉/openmv/在不同固件API中查看sensor的函数.md",
+    "图片（新）/ESP32图片/Pasted image 20260423102735.png",
+    "图片（新）/ESP32图片/Pasted image 20260423103909.png",
+    "图片（新）/ESP32图片/Pasted image 20260423124525.png",
+    "图片（新）/ESP32图片/Pasted image 20260423132402.png",
+    "图片（新）/ESP32图片/Pasted image 20260423133307.png",
+    "图片（新）/ESP32图片/Pasted image 20260526203031.png",
+    "图片（新）/ESP32图片/Pasted image 20260722165140.png",
+    "图片（新）/ESP32图片/Pasted image 20260722165147.png",
+    "未命名 2",
+    "图片（新）",
+    "Arduino/1.Arduino配置ESP8266(ESP-12F)环境.md",
+    "Arduino/2.烧录固件.md",
+    "图片（新）/硬件图片",
     "STM32/GPIO(General Purpose Input Output)通用输入输出口.md",
-    "在不同固件API中查看sensor的函数.md",
     "STM32/新建工程.md",
     "STM32/GPIO引脚配置.md",
     "器件/继电器.md",
-    "Arduino/2.烧录固件.md",
     "Arduino/3.每次新建项目都需要做的前置操作.md",
-    "Arduino/1.Arduino配置ESP8266(ESP-12F)环境.md",
-    "Pasted image 20260722183918.png",
-    "ESP8266烧录固件的硬件接线.png",
-    "Pasted image 20260722165147.png",
-    "Pasted image 20260722165140.png",
-    "ESP8266烧录文件路径.png",
-    "23年E题目.md",
     "STM32/USART外设.md",
     "程序语言设计/C语言/C语言_STM32常用.md",
     "程序语言设计/C语言/指针.md",
@@ -265,8 +272,7 @@
     "STM32/舵机使用注意事项.md",
     "2026-04-28.md",
     "STM32/TIM(Timer)定时器.md",
-    "Pasted image 20260423102735.png",
-    "未命名 1",
+    "图片（新）/ESP32图片",
     "STM32/点灯PC13.md",
     "未命名",
     "STM32/OLED(Organic Light Emitting Diode)有机发光二极管.md",
@@ -275,15 +281,10 @@
     "STM32/ADC数模转换器.md",
     "STM32/用到英文及简称.md",
     "STM32/时钟.md",
-    "Pasted image 20260526203031.png",
-    "Pasted image 20260423103909.png",
     "未命名.base",
     "图片/Arduino配置ESP8266(ESP-12F)环境",
     "Arduino",
     "图片/继电器",
-    "器件",
-    "透明人：数字裸奔警示录——在数.docx",
-    "STM32/利用RK_H差动行星轮系实现的",
-    "STM32"
+    "器件"
   ]
 }
